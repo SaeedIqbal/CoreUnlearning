@@ -1,6 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from load_data import load_cifar10, load_cifar100, load_imdb4k, load_cora, load_femnist, load_mvtec_ad  # Import relevant dataset loaders
+from exact_unlearning import ExactUnlearning  # Assuming ExactUnlearning is defined elsewhere
+from torch.utils.data import DataLoader
 
 class ExactUnlearning:
     def __init__(self, model, hyperparameters):
@@ -138,31 +141,61 @@ hyperparameters = {
     'gamma': 0.01
 }
 
-# Example usage
+# Usage
 if __name__ == "__main__":
     # Define a My PyTorch model
     class MyModel(nn.Module):
         def __init__(self):
             super(MyModel, self).__init__()
-            self.fc = nn.Linear(10, 1)
+            self.fc = nn.Linear(10, 1)  # Example model (adjust as needed for the dataset)
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             self.baseline_weights = self.fc.weight.clone().detach()
             self.adapter_weights = [self.fc.weight.clone().detach()]
             self.pretrained_weights = [self.fc.weight.clone().detach()]
-            self.partitions = [torch.rand(10, 10)]
+            self.partitions = [torch.rand(10, 10)]  # Dummy partition for example
 
         def forward(self, x):
-            return torch.sigmoid(self.fc(x))
+            return torch.sigmoid(self.fc(x))  # Example forward pass
 
     # Instantiate model and optimizer
     model = MyModel().to(model.device)
+    hyperparameters = {'eta': 0.01}  # Example hyperparameters
     optimizer = optim.SGD(model.parameters(), lr=hyperparameters['eta'])
+
+    # Accept dataset name as a parameter
+    dataset_name = 'cifar10'  # You can change this to any dataset name (e.g., 'cifar100', 'imdb', etc.)
+
+    # Load dataset using if-else based on dataset_name
+    if dataset_name == 'cifar10':
+        train_loader, test_loader = load_cifar10()
+        print("CIFAR-10 Loaded Successfully")
+    elif dataset_name == 'cifar100':
+        train_loader, test_loader = load_cifar100()
+        print("CIFAR-100 Loaded Successfully")
+    elif dataset_name == 'imdb4k':
+        train_iter, test_iter, text_pipeline = load_imdb4k()
+        print("IMDB4K Loaded Successfully")
+    elif dataset_name == 'cora':
+        data = load_cora()
+        print("Cora Loaded Successfully")
+    elif dataset_name == 'femnist':
+        train_loader, test_loader = load_femnist()
+        print("FEMNIST Loaded Successfully")
+    elif dataset_name == 'mvtec_ad':
+        train_loader = load_mvtec_ad(category='bottle')  # Example: 'bottle' category
+        print("MVTec AD Loaded Successfully (Category: bottle)")
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset_name}")
 
     # Instantiate ExactUnlearning
     unlearning = ExactUnlearning(model, hyperparameters)
 
-    # Example data loader
-    data_loader = [(torch.rand(5, 10), torch.randint(0, 2, (5, 1)).float())]
+    # Update weights using Exact Unlearning methodology
+    if dataset_name == 'imdb4k':
+        # For text datasets, you would need to handle the data differently (e.g., tokenization, embeddings, etc.)
+        data_loader = train_iter  # Modify this if you need to process the data properly
+    else:
+        data_loader = train_loader  # Use data loader for image datasets, etc.
 
     # Update weights using exact unlearning methodology
     updated_weights = unlearning.update_weights(data_loader, optimizer)

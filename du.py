@@ -89,7 +89,7 @@ class DistributedUnlearning:
 
 #  usage
 if __name__ == "__main__":
-    # Sample data shards
+    # Sample data shards to check our model is wroking or not..... place it with real autonomous values... 
     data_shards = {
         0: {
             "retain": [1.0, 2.0, 3.0],

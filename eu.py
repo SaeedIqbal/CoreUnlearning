@@ -126,8 +126,22 @@ class ExactUnlearning:
         Returns:
             Hessian inverse matrix.
         """
-        # Placeholder: Replace with actual computation of Hessian inverse
-        return torch.eye(len(list(self.model.parameters())))
+        # Similar to the compute_hessian function above
+        outputs = self.model(inputs)
+        loss = nn.BCELoss()(outputs, targets)
+
+        num_params = sum(p.numel() for p in self.model.parameters())
+        hessian = torch.zeros(num_params, num_params)
+
+        grads = torch.autograd.grad(loss, self.model.parameters(), create_graph=True)
+        grads_flat = torch.cat([g.view(-1) for g in grads])
+
+        for i in range(num_params):
+            grad_i = grads_flat[i]
+            hessian_row = torch.autograd.grad(grad_i, self.model.parameters(), retain_graph=True)
+            hessian[i] = torch.cat([g.view(-1) for g in hessian_row])
+
+        return hessian
 
 # Define hyperparameters
 hyperparameters = {

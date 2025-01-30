@@ -1,7 +1,7 @@
 import numpy as np
 
 class CoreUnlearning:
-    def __init__(self, dataset, rho, epsilon, lambda_m, mu_m, kappa, gamma_k, zeta, alpha_k):
+    def __init__(self, dataset, rho, epsilon, lambda_m, mu_m, kappa, gamma_k, zeta, alpha_k, beta, learning_rate):
         # Initialize parameters and dataset
         self.dataset = dataset
         self.rho = rho
@@ -12,6 +12,8 @@ class CoreUnlearning:
         self.gamma_k = gamma_k
         self.zeta = zeta
         self.alpha_k = alpha_k
+        self.beta = beta  # Added initialization for beta
+        self.learning_rate = learning_rate  # Added initialization for learning_rate
 
     def compute_shard_specific_dynamics(self, grad_loss):
         """
@@ -120,9 +122,11 @@ kappa = 0.01
 gamma_k = 0.1
 zeta = 0.5
 alpha_k = [0.1, 0.2]
+beta = 0.1  # Added beta value
+learning_rate = 0.001  # Added learning rate value
 
 # Initialize Core Unlearning
-core_unlearning = CoreUnlearning(dataset, rho, epsilon, lambda_m, mu_m, kappa, gamma_k, zeta, alpha_k)
+core_unlearning = CoreUnlearning(dataset, rho, epsilon, lambda_m, mu_m, kappa, gamma_k, zeta, alpha_k, beta, learning_rate)
 
 # Model parameters ( placeholder)
 model_params = {
